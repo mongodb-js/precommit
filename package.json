@@ -1,0 +1,42 @@
+{
+  "name": "@mongodb-js/precommit",
+  "description": "Shared static analysis and integrity tooling.",
+  "version": "0.0.0",
+  "author": "Lucas Hrabovsky <lucas@mongodb.com> (http://imlucas.com)",
+  "homepage": "http://github.com/10gen/scout",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/10gen/scout.git"
+  },
+  "scripts": {
+    "check": "node bin/mongodb-js-precommit.js"
+  },
+  "precommmit": [],
+  "bin": {
+    "mongodb-js-precommit": "bin/mongodb-js-precommit.js"
+  },
+  "dependencies": {
+    "async": "^1.3.0",
+    "debug": "^2.2.0",
+    "dependency-check": "^2.2.3",
+    "esformatter-braces": "^1.0.0",
+    "esformatter-quotes": "^1.0.0",
+    "esformatter-semicolons": "^1.0.3",
+    "eslint": "^0.24.0",
+    "eslint-config-mongodb-js": "^0.1.1",
+    "glob": "^5.0.12",
+    "jsfmt": "^0.4.1"
+  },
+  "dependency-check": {
+    "ignore": [
+      "esformatter-braces",
+      "esformatter-quotes",
+      "esformatter-semicolons",
+      "eslint-config-mongodb-js"
+    ]
+  },
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "pre-commit": "^1.0.10"
+  }
+}
