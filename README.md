@@ -6,11 +6,11 @@
 
 `mongodb-js-precommit` provides a shortcut to the following useful tools:
 
-- [dependency-check][dependency-check] Makes sure you didn't forget to update
+- [`dependency-check`][dependency-check] Makes sure you didn't forget to update
   your `package.json` with new dependencies or remove dependencies your module
   isn't using anymore.
-- [jsfmt][jsfmt] Formats your code to the syleguide for you.
-- [eslint][eslint] Makes sure your code conforms to the syleguide for cases
+- [`jsfmt`][jsfmt] Formats your code to the syleguide for you.
+- [`eslint`][eslint] Makes sure your code conforms to the syleguide for cases
   that aren't just simple formatting and are probably bugs.
 
 ## Example
@@ -66,9 +66,9 @@ For more information, checkout [eslint-config-mongodb-js][eslint-config-mongodb-
 
 ## Todo
 
-- [`npm-check-updates`][npm-check-updates]: Can we safely update dependency
+- [`npm-check-updates`][npm-check-updates] Can we safely update dependency
   versions to latest safely?
-- [`nsp`][nsp]: Are you using any modules with known security vulnerabilites?
+- [`nsp`][nsp] Are you using any modules with known security vulnerabilites?
 
 ## License
 
