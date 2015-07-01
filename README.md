@@ -58,7 +58,7 @@ new found free time that would have been spent on code reviews.
 
 ### precommit
 
-Checkout the [pre-commit configuration docs][[pre-commit_config]] for more details.
+Checkout the [pre-commit configuration docs][pre-commit_config] for more details.
 
 ### eslint
 
