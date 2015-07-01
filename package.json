@@ -14,7 +14,8 @@
     "check": "node bin/mongodb-js-precommit.js"
   },
   "precommmit": [
-    "check"
+    "check",
+    "test"
   ],
   "bin": {
     "mongodb-js-precommit": "bin/mongodb-js-precommit.js"
