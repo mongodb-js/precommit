@@ -74,6 +74,7 @@ For more information, checkout [eslint-config-mongodb-js][eslint-config-mongodb-
 
 Apache 2.0
 
+
 [pre-commit]: https://www.npmjs.com/package/pre-commit
 [pre-commit_config]: https://www.npmjs.com/package/pre-commit#configuration
 [travis_img]: https://img.shields.io/travis/mongodb-js/precommit.svg
