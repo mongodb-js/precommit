@@ -13,12 +13,30 @@ function check(mode, done) {
       entries: [],
       ignore: []
     };
+  pkg.devDependencies = pkg.devDependencies || {};
 
   var opts = {
     path: process.cwd() + '/package.json',
     entries: pkg['dependency-check'].entries,
     ignore: pkg['dependency-check'].ignore
   };
+
+  /**
+   * Sane defaults for common devDependencies not used via an `entry` script.
+   */
+  opts.ignore.push.apply(opts.ignore, [
+    'eslint-config-mongodb-js',
+    'mongodb-js-precommit'
+  ]);
+
+  var test = pkg.scripts.test;
+  /**
+   * If mocha already a dependency and we're using it for `test`,
+   * ignore it so it doesn't show up as an extra dependency.
+   */
+  if (test && test.indexOf('mocha') > -1 && pkg.devDependencies.mocha) {
+    opts.ignore.push('mocha');
+  }
 
   function filterIgnored(results) {
     return results.filter(function(name) {
@@ -32,25 +50,23 @@ function check(mode, done) {
     var deps = data.used;
     var results;
     var errMsg;
-    var successMsg;
     var corrector;
 
     if (mode === 'extra') {
+      // Are all dependencies in package.json are used in the code?
       results = filterIgnored(dc.extra(pkg, deps, {
         excludeDev: true
       }));
       errMsg = 'Modules in package.json not used in code';
       corrector = 'npm uninstall --save ' + results.join(' ') + ';';
-      successMsg = 'All dependencies in package.json are used in the code';
     } else {
+      // Are we missing any dependencies in package.json?
       results = filterIgnored(dc.missing(pkg, deps));
       errMsg = 'Dependencies not listed in package.json';
-      successMsg = 'All dependencies used in the code are listed in package.json';
       corrector = 'npm install --save ' + results.join(' ') + ';';
     }
 
     if (results.length === 0) {
-      console.log('Success: ' + successMsg);
       return done();
     }
     console.error('Error: ' + errMsg + '. To fix this, run:\n\n    ' + corrector + '\n');
@@ -82,12 +98,16 @@ var fmt = function(opts, done) {
   function fmt(src, cb) {
     fs.readFile(src, function(err, buf) {
       if (err) return cb(err);
-      fs.writeFile(src, jsfmt.format(buf, config), cb);
+      try {
+        var formatted = jsfmt.format(buf.toString('utf-8'), config);
+        fs.writeFile(src, formatted, cb);
+      } catch (e) {
+        return cb(e);
+      }
     });
   }
-
   async.parallel(opts.files.map(function(file) {
-    return fmt.bin(null, file);
+    return fmt.bind(null, file);
   }), done);
 };
 
