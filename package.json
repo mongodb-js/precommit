@@ -11,7 +11,7 @@
   "scripts": {
     "check": "node bin/mongodb-js-precommit.js"
   },
-  "precommmit": [],
+  "precommmit": ["check"],
   "bin": {
     "mongodb-js-precommit": "bin/mongodb-js-precommit.js"
   },
