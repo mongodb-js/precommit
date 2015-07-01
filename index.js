@@ -5,13 +5,14 @@ var glob = require('glob');
 var CLIEngine = require('eslint').CLIEngine;
 var jsfmt = require('jsfmt');
 var async = require('async');
+var fs = require('fs');
 
 function check(mode, done) {
   var pkg = require(process.cwd() + '/package.json');
   pkg['dependency-check'] = pkg['dependency-check'] || {
-    entries: [],
-    ignore: []
-  };
+      entries: [],
+      ignore: []
+    };
 
   var opts = {
     path: process.cwd() + '/package.json',
@@ -57,11 +58,9 @@ function check(mode, done) {
   });
 }
 
-
-
 var lint = function(opts, done) {
   var cli = new CLIEngine({
-      useEslintrc: true
+    useEslintrc: true
   });
 
   debug('Getting paths to lint...');
@@ -77,9 +76,26 @@ var lint = function(opts, done) {
   done();
 };
 
-module.exports = function(done){
+var fmt = function(opts, done) {
+  var config = jsfmt.getConfig();
+
+  function fmt(src, cb) {
+    fs.readFile(src, function(err, buf) {
+      if (err) return cb(err);
+      fs.writeFile(src, jsfmt.format(buf, config), cb);
+    });
+  }
+
+  async.parallel(opts.files.map(function(file) {
+    return fmt.bin(null, file);
+  }), done);
+};
+
+module.exports = function(done) {
   var opts = {};
-  glob('**/*.js', { ignore: ['node_modules/**'] }, function (err, files) {
+  glob('**/*.js', {
+    ignore: ['node_modules/**']
+  }, function(err, files) {
     if (err) return done(err);
 
     opts.files = files;
@@ -87,6 +103,7 @@ module.exports = function(done){
     async.series({
       'missing dependencies': check.bind(null, 'missing'),
       'extra dependencies': check.bind(null, 'extra'),
+      fmt: fmt.bind(null, opts),
       lint: lint.bind(null, opts)
     }, done);
   });

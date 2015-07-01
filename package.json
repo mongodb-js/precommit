@@ -23,7 +23,7 @@
     "esformatter-quotes": "^1.0.0",
     "esformatter-semicolons": "^1.0.3",
     "eslint": "^0.24.0",
-    "eslint-config-mongodb-js": "^0.1.1",
+    "eslint-config-mongodb-js": "^0.1.2",
     "glob": "^5.0.12",
     "jsfmt": "^0.4.1"
   },
