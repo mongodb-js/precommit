@@ -20,6 +20,8 @@ function check(mode, done) {
     entries: pkg['dependency-check'].entries,
     ignore: pkg['dependency-check'].ignore
   };
+  opts.ignore = opts.ignore || [];
+  opts.entries = opts.entries || [];
 
   /**
    * Sane defaults for common devDependencies not used via an `entry` script.
