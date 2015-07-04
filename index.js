@@ -7,7 +7,7 @@ var jsfmt = require('jsfmt');
 var async = require('async');
 var fs = require('fs');
 
-function check(mode, done) {
+function check(options, mode, done) {
   var pkg = require(process.cwd() + '/package.json');
   pkg['dependency-check'] = pkg['dependency-check'] || {
       entries: [],
@@ -72,7 +72,8 @@ function check(mode, done) {
       return done();
     }
     console.error('Error: ' + errMsg + '. To fix this, run:\n\n    ' + corrector + '\n');
-    return done(new Error(errMsg));
+    options.result.errors.push(new Error(errMsg));
+    return done();
   });
 }
 
@@ -88,8 +89,10 @@ var lint = function(opts, done) {
   console.log(formatter(report.results));
 
   if (report.errorCount > 0) {
-    return done(new Error(format('Please fix the %d error(s) above and try again.',
-      report.errorCount)));
+    var err = new Error(format(
+      'Please fix the %d error(s) above and try again.', report.errorCount));
+    opts.result.errors.push(err);
+    return done();
   }
   done();
 };
@@ -110,23 +113,48 @@ var fmt = function(opts, done) {
   }
   async.parallel(opts.files.map(function(file) {
     return fmt.bind(null, file);
-  }), done);
+  }), function(err) {
+    if (err) {
+      opts.result.errors.push(err);
+    }
+    done();
+  });
 };
 
 module.exports = function(done) {
-  var opts = {};
-  glob('**/*.js', {
-    ignore: ['node_modules/**']
-  }, function(err, files) {
+  var pkg = require(process.cwd() + '/package.json');
+  var opts = {
+    ignore: [
+      'node_modules/**'
+    ]
+  };
+  pkg.check = pkg.check || {};
+  pkg.check.ignore = pkg.check.ignore || [];
+
+  opts.ignore.push.apply(opts.ignore, pkg.check.ignore);
+  opts.result = {
+    errors: []
+  };
+
+  glob('**/*.js', opts, function(err, files) {
     if (err) return done(err);
 
     opts.files = files;
-
     async.series({
-      'missing dependencies': check.bind(null, 'missing'),
-      'extra dependencies': check.bind(null, 'extra'),
+      'missing dependencies': check.bind(null, opts, 'missing'),
+      'extra dependencies': check.bind(null, opts, 'extra'),
       fmt: fmt.bind(null, opts),
       lint: lint.bind(null, opts)
-    }, done);
+    }, function(err) {
+      if (err) {
+        return done(err);
+      }
+      if (opts.result.errors.length > 0) {
+        var error = new Error(format('%d check(s) failed', opts.result.errors.length));
+        error.errors = opts.result.errors;
+        return done(error);
+      }
+      return done();
+    });
   });
 };
