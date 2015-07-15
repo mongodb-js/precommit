@@ -138,6 +138,7 @@ module.exports = function(done) {
 
   glob('**/*.js', opts, function(err, files) {
     if (err) return done(err);
+    debug('project has %d files', files.length);
 
     opts.files = files;
     async.series({
