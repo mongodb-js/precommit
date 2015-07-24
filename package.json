@@ -38,8 +38,12 @@
   "dependency-check": {
     "ignore": [
       "esformatter-braces",
+      "esformatter-dot-notation",
+      "esformatter-quote-props",
       "esformatter-quotes",
-      "esformatter-semicolons"
+      "esformatter-remove-trailing-commas",
+      "esformatter-semicolons",
+      "esformatter-var-each"
     ]
   },
   "license": "Apache-2.0",
