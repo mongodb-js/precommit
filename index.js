@@ -3,9 +3,7 @@ var format = require('util').format;
 var debug = require('debug')('mongodb-js-precommit');
 var glob = require('glob');
 var CLIEngine = require('eslint').CLIEngine;
-var jsfmt = require('jsfmt');
 var async = require('async');
-var fs = require('fs');
 
 function check(options, mode, done) {
   var pkg = require(process.cwd() + '/package.json');
@@ -83,6 +81,10 @@ var lint = function(opts, done) {
   });
 
   debug('Getting paths to lint...');
+  // @todo (imlucas): See `mongodb-js-fmt` --changed option.
+  // Should use the solution for that here as well by default
+  // bc we're a precommit hook and should only be looking
+  // at the files the user actually changed.
   debug('Linting files', opts.files);
   var report = cli.executeOnFiles(opts.files);
   var formatter = cli.getFormatter();
@@ -95,30 +97,6 @@ var lint = function(opts, done) {
     return done();
   }
   done();
-};
-
-var fmt = function(opts, done) {
-  var config = jsfmt.getConfig();
-
-  function fmt(src, cb) {
-    fs.readFile(src, function(err, buf) {
-      if (err) return cb(err);
-      try {
-        var formatted = jsfmt.format(buf.toString('utf-8'), config);
-        fs.writeFile(src, formatted, cb);
-      } catch (e) {
-        return cb(e);
-      }
-    });
-  }
-  async.parallel(opts.files.map(function(file) {
-    return fmt.bind(null, file);
-  }), function(err) {
-    if (err) {
-      opts.result.errors.push(err);
-    }
-    done();
-  });
 };
 
 module.exports = function(done) {
@@ -144,7 +122,6 @@ module.exports = function(done) {
     async.series({
       'missing dependencies': check.bind(null, opts, 'missing'),
       'extra dependencies': check.bind(null, opts, 'extra'),
-      fmt: fmt.bind(null, opts),
       lint: lint.bind(null, opts)
     }, function(err) {
       if (err) {
