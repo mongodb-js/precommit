@@ -56,11 +56,13 @@ function check(options, mode, done) {
   }
 
   var pkg = require(path.join(options.dir, 'package.json'));
-  defaults(pkg['dependency-check'], {
-    entries: [],
-    ignore: []
+  defaults(pkg, {
+    'dependency-check': {
+      entries: [],
+      ignore: []
+    },
+    devDependencies: {}
   });
-  pkg.devDependencies = pkg.devDependencies || {};
 
   var opts = {
     path: path.join(options.dir, 'package.json'),

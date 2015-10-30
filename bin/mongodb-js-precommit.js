@@ -42,6 +42,6 @@ precommit(args, function(err, res) {
   if (args.json) {
     console.log(JSON.stringify(res, null, 2));
   } else {
-    console.log('\n\n', chalk.green(figures.tick), ' ok!  no potential errors found');
+    console.log('\n\n', chalk.green(figures.tick), ' OK!  No potential errors found');
   }
 });
