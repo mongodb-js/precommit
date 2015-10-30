@@ -34,7 +34,9 @@ precommit(args, function(err, res) {
       err = JSON.stringify(err, null, 2);
     }
     console.error(chalk.red(figures.cross), err.message);
-    console.error(chalk.gray(err.stack));
+    if (!err.result) {
+      console.error(chalk.gray(err.stack));
+    }
     process.exit(1);
     return;
   }

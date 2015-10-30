@@ -111,12 +111,12 @@ function check(options, mode, done) {
       results = filterIgnored(dc.extra(pkg, deps, {
         excludeDev: true
       }));
-      errMsg = 'Modules in package.json not used in code';
+      errMsg = 'There are dependencies in package.json that are not used in code';
       corrector = 'npm uninstall --save ' + results.join(' ') + ';';
     } else {
       // Are we missing any dependencies in package.json?
       results = filterIgnored(dc.missing(pkg, deps));
-      errMsg = 'Dependencies not listed in package.json';
+      errMsg = 'There are dependencies in use that are not in package.json.';
       corrector = 'npm install --save ' + results.join(' ') + ';';
     }
 
@@ -130,9 +130,10 @@ function check(options, mode, done) {
       }
       return done();
     }
-    errMsg += '\n' + corrector;
-    errMsg += '\nPlease see the configuration docs for more info:\n';
-    errMsg += 'https://github.com/mongodb-js/precommit#configuration';
+    errMsg += chalk.gray('\nYou can correct this error by running:');
+    errMsg += '\n    ' + chalk.bold.white(corrector);
+    errMsg += chalk.gray('\n\nPlease see the configuration docs for more info:\n');
+    errMsg += chalk.blue('https://github.com/mongodb-js/precommit#configuration');
 
     options.result.errors.push(new Error(errMsg));
     return done();
@@ -165,10 +166,11 @@ var lint = function(opts, done) {
 
   debug('eslint result', JSON.stringify(report.results, null, 2));
   if (report.errorCount > 0) {
-    console.log(opts.result.eslint);
-    var err = new Error(format(
-      'Please fix the %d error(s) above and try again.',
-      report.errorCount));
+    var msg = format(
+      'Please fix the %d error(s) below.',
+      report.errorCount);
+    msg += '\n\n' + formatter(report.results);
+    var err = new Error(msg);
     opts.result.errors.push(err);
   } else {
     console.log('  ' + chalk.green(figures.tick),
@@ -227,7 +229,16 @@ module.exports = function(opts, done) {
       return done(err);
     }
     if (opts.result.errors.length > 0) {
-      var error = new Error(format('%d check(s) failed', opts.result.errors.length));
+      var error = new Error(format('%d check(s) failed:\n', opts.result.errors.length));
+      opts.result.errors.map(function(e) {
+        e.message.split('\n').map(function(line, i) {
+          if (i === 0) {
+            error.message += '  ' + chalk.red.bold(line) + '\n';
+          } else {
+            error.message += '      ' + line + '\n';
+          }
+        });
+      });
       assign(error, opts);
       return done(error);
     }
