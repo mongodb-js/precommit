@@ -1,0 +1,15 @@
+Usage: mongodb-js-precommit <file>... [--dir=<path/to/module/dir>]
+
+I'll help you keep typos out of your projects.
+
+Usage:
+  # Lint all js files in the `./lib` directory:
+  mongodb-js-precommit ./lib/{*.js,**/*.js}
+
+Options:
+  <file>
+  --dir=<path>   The directory your package.json lives in. [Default: `process.cwd()`].
+  --json         Ooutput as JSON for your machine friends [Default: `false`].
+  --debug        Enable debug messages.
+  -h --help      Show this screen.
+  --version      Show version.
