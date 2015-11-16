@@ -44,6 +44,15 @@ precommit(args, function(err, res) {
   if (args.json) {
     console.log(JSON.stringify(res, null, 2));
   } else {
-    console.log('\n\n', chalk.green(figures.tick), ' OK!  No potential errors found');
+    console.log('\n\n', chalk.green(figures.tick), ' OK!  0 potential errors found');
+
+    if (res.result.eslintResult.warningCount) {
+      console.log('\n\n', chalk.yellow(figures.warning), ' ',
+        res.result.eslintResult.warningCount, 'warnings found');
+
+      console.log(chalk.gray('  While 0 errors were detected, you may want to '
+        + 'consider addressing the following:'));
+      console.log(res.result.eslint);
+    }
   }
 });

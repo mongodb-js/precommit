@@ -14,6 +14,9 @@ var debug = require('debug')('mongodb-js-precommit');
 
 /**
  * Expand globs into paths.
+ *
+ * @param {Object} opts
+ * @param {Function} done
  */
 function resolve(opts, done) {
   debug('resolving paths for globs:\n', JSON.stringify(opts.globs));
@@ -160,6 +163,7 @@ var lint = function(opts, done) {
   var formatter = cli.getFormatter();
   if (!opts.json) {
     opts.result.eslint = formatter(report.results);
+    opts.result.eslintResult = report;
   } else {
     opts.result.eslint = report.results;
   }
