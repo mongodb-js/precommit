@@ -60,14 +60,14 @@ precommit(args, function(err, res) {
   if (args.json) {
     console.log(JSON.stringify(res, null, 2));
   } else {
-    console.log('\n\n', chalk.green('#', figures.tick), ' OK!  0 potential errors found');
+    console.log(chalk.green(' ', figures.tick), ' OK!  0 potential errors found');
 
     if (res.result.warnings.length > 0) {
-      console.log('\n', chalk.yellow('>', figures.warning),
+      console.log('\n', chalk.yellow(' ', figures.warning),
         ' ' + res.result.warnings.length + ' check(s) produced warnings you should be aware of:\n');
 
       res.result.warnings.map(function(warning) {
-        console.log(' ' + chalk.yellow.bold('#', figures.warning), ' ' + warning.title + '\n');
+        console.log(' ' + chalk.yellow.bold(' ', figures.warning), ' ' + warning.title + '\n');
         warning.message.split('\n').forEach(function(line) {
           console.log('  ' + line);
         });
