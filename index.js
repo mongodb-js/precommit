@@ -52,6 +52,10 @@ function check(options, mode, done) {
     console.log('  ' + chalk.gray(figures.pointerSmall,
         'Checking for dependencies in package.json not used in code'
         + figures.ellipsis));
+  } else if (mode === 'extra-dev') {
+    console.log('  ' + chalk.gray(figures.pointerSmall,
+        'Checking for devDependencies in package.json not used in code'
+        + figures.ellipsis));
   } else {
     console.log('  ' + chalk.gray(figures.pointerSmall,
         'Checking for dependencies used in code but not added to package.json'
@@ -80,7 +84,9 @@ function check(options, mode, done) {
    */
   opts.ignore.push.apply(opts.ignore, [
     'eslint-config-mongodb-js',
-    'mongodb-js-precommit'
+    'mongodb-js-precommit',
+    'mongodb-js-fmt',
+    'pre-commit'
   ]);
 
   var test = pkg.scripts.test;
@@ -113,26 +119,68 @@ function check(options, mode, done) {
       // Are all dependencies in package.json are used in the code?
       results = filterIgnored(dc.extra(pkg, deps, {
         excludeDev: true
-      }));
-      errMsg = 'There are dependencies in package.json that are not used in code';
+      })).filter(function(name) {
+        return pkg.devDependencies[name] !== undefined;
+      });
+
+      errMsg = results.length + ' dependencies in package.json are not used in code';
       corrector = 'npm uninstall --save ' + results.join(' ') + ';';
+    } else if (mode === 'extra-dev') {
+      results = filterIgnored(dc.extra(pkg, deps, {
+        excludeDev: false
+      })).filter(function(name) {
+        return pkg.devDependencies[name] !== undefined;
+      });
+
+      errMsg = results.length + ' devDependencies in package.json could not be detected as used in code';
+      corrector = 'npm uninstall --save-dev ' + results.join(' ') + ';';
     } else {
       // Are we missing any dependencies in package.json?
       results = filterIgnored(dc.missing(pkg, deps));
-      errMsg = 'There are dependencies in use that are not in package.json.';
-      corrector = 'npm install --save ' + results.join(' ') + ';';
+      errMsg = results.length + ' dependencies|devDependencies missing from package.json';
+      corrector = results.map(function(name) {
+        return 'npm install --save ' + name + ';';
+      }).join('\n');
     }
 
     if (results.length === 0) {
       if (mode === 'extra') {
         console.log('  ' + chalk.green(figures.tick),
           ' No extra dependencies in package.json');
+      } else if (mode === 'extra-dev') {
+        console.log('  ' + chalk.green(figures.tick),
+          ' No extra devDependencies in package.json');
       } else {
         console.log('  ' + chalk.green(figures.tick),
-          ' All dependencies declared in package.json');
+          ' No missing dependencies in package.json');
       }
       return done();
     }
+
+    if (mode === 'extra-dev') {
+      var msg = [
+        chalk.gray('  There are modules listed as devDependencies in package.json we\n'),
+        chalk.gray('  could not detect are being used in your code.\n\n'),
+        chalk.gray('  Advanced users should considering updating the `dependency-check`\n'),
+        chalk.gray('  configuration in package.json to add additional entrypoints to scan for usage.\n'),
+        chalk.gray('  We suggest running the following command to clean-up:\n'),
+        chalk.white.bold('    npm install --save ' + results.join(' ') + ';\n\n'),
+        chalk.gray('\n\nPlease see the configuration docs for more info:\n'),
+        chalk.blue('https://github.com/mongodb-js/precommit#configuration')
+      ].join('');
+
+      var title = format('%d potentially unused devDependencies', results.length);
+      options.result.warnings.push({
+        title: title,
+        message: msg
+      });
+
+      console.log('  ' + chalk.yellow(figures.warning), ' ' + title);
+      return done();
+    }
+
+    console.log('  ' + chalk.red(figures.cross), ' ' + errMsg);
+
     errMsg += chalk.gray('\nYou can correct this error by running:');
     errMsg += '\n    ' + chalk.bold.white(corrector);
     errMsg += chalk.gray('\n\nPlease see the configuration docs for more info:\n');
@@ -163,7 +211,6 @@ var lint = function(opts, done) {
   var formatter = cli.getFormatter();
   if (!opts.json) {
     opts.result.eslint = formatter(report.results);
-    opts.result.eslintResult = report;
   } else {
     opts.result.eslint = report.results;
   }
@@ -176,6 +223,21 @@ var lint = function(opts, done) {
     msg += '\n\n' + formatter(report.results);
     var err = new Error(msg);
     opts.result.errors.push(err);
+    console.log('  ' + chalk.red.bold(figures.cross),
+      report.errorCount, ' eslint errors detected');
+  } else if (report.warningCount > 0) {
+    var title = format('%s eslint warnings detected', report.warningCount);
+    console.log('  ' + chalk.yellow.bold(figures.warning), ' ' + title);
+
+    opts.result.warnings.push({
+      title: title,
+      message: [
+        chalk.gray(format('  While eslint detected 0 potential errors,'
+          + ' you may want to consider addressing these %s warnings:', report.warningCount))
+        + '\n\n',
+        formatter(report.results)
+      ].join('')
+    });
   } else {
     console.log('  ' + chalk.green(figures.tick),
       ' No errors found by eslint');
@@ -192,7 +254,8 @@ module.exports = function(opts, done) {
     formatted: [],
     unchanged: [],
     result: {
-      errors: []
+      errors: [],
+      warnings: []
     }
   });
 
@@ -223,17 +286,27 @@ module.exports = function(opts, done) {
   console.log(chalk.gray('For more info, please see'),
     chalk.gray.bold('https://github.com/mongodb-js/precommit'), '\n');
 
-  async.series([
-    resolve.bind(null, opts),
+  var checks = [
     check.bind(null, opts, 'missing'),
     check.bind(null, opts, 'extra'),
+    // check.bind(null, opts, 'extra-dev'),
     lint.bind(null, opts)
-  ], function(err) {
+  ];
+
+  var tasks = [
+    resolve.bind(null, opts)
+  ];
+  tasks.push.apply(tasks, checks);
+
+  async.series(tasks, function(err) {
     if (err) {
       return done(err);
     }
+
     if (opts.result.errors.length > 0) {
-      var error = new Error(format('%d check(s) failed:\n', opts.result.errors.length));
+      var error = new Error(format('%d of %d check(s) failed:\n',
+        opts.result.errors.length, checks.length));
+
       opts.result.errors.map(function(e) {
         e.message.split('\n').map(function(line, i) {
           if (i === 0) {
