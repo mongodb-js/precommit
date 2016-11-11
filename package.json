@@ -3,10 +3,10 @@
   "description": "Shared static analysis and integrity tooling.",
   "version": "0.2.9",
   "author": "Lucas Hrabovsky <lucas@mongodb.com> (http://imlucas.com)",
-  "homepage": "http://github.com/10gen/scout",
+  "homepage": "https://github.com/mongodb-js/precommit",
   "repository": {
     "type": "git",
-    "url": "git://github.com/10gen/scout.git"
+    "url": "git://github.com/mongodb-js/precommit.git"
   },
   "scripts": {
     "test": "mocha",
