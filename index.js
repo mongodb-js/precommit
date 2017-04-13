@@ -31,7 +31,7 @@ function resolve(opts, done) {
         if (files.length > 0) {
           opts.files.push.apply(opts.files, files);
         }
-        cb();
+        return cb();
       });
     };
   });
@@ -42,7 +42,7 @@ function resolve(opts, done) {
     debug('checking and removing duplicate paths...');
     opts.files = unique(opts.files);
     debug('final result has `%d` files', opts.files.length);
-    done(null, opts.files);
+    return done(null, opts.files);
   });
 }
 
