@@ -8,7 +8,8 @@ var figures = require('figures');
 
 var usage = fs.readFileSync(path.resolve(__dirname, '../usage.txt')).toString();
 var args = require('minimist')(process.argv.slice(2), {
-  boolean: ['debug', 'json']
+  boolean: ['debug', 'json'],
+  string: ['detective']
 });
 
 if (args.debug) {
