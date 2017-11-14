@@ -74,7 +74,8 @@ function check(options, mode, done) {
   var opts = {
     path: path.join(options.dir, 'package.json'),
     entries: pkg['dependency-check'].entries,
-    ignore: pkg['dependency-check'].ignore
+    ignore: pkg['dependency-check'].ignore,
+    detective: options.detective || 'precinct'
   };
   opts.ignore = opts.ignore || [];
   opts.entries = opts.entries || [];
@@ -251,6 +252,7 @@ module.exports = function(opts, done) {
     files: [],
     dry: false,
     json: false,
+    detective: 'precinct',
     formatted: [],
     unchanged: [],
     result: {

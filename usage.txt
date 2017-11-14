@@ -13,3 +13,4 @@ Options:
   --debug        Enable debug messages.
   -h --help      Show this screen.
   --version      Show version.
+  --detective    Use a different parser for the `dependency-check`. [Default: `precinct`].
