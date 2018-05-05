@@ -50,15 +50,15 @@ function resolve(opts, done) {
 function check(options, mode, done) {
   if (mode === 'extra') {
     console.log('  ' + chalk.gray(figures.pointerSmall,
-        'Checking for dependencies in package.json not used in code'
+      'Checking for dependencies in package.json not used in code'
         + figures.ellipsis));
   } else if (mode === 'extra-dev') {
     console.log('  ' + chalk.gray(figures.pointerSmall,
-        'Checking for devDependencies in package.json not used in code'
+      'Checking for devDependencies in package.json not used in code'
         + figures.ellipsis));
   } else {
     console.log('  ' + chalk.gray(figures.pointerSmall,
-        'Checking for dependencies used in code but not added to package.json'
+      'Checking for dependencies used in code but not added to package.json'
         + figures.ellipsis));
   }
 
@@ -205,8 +205,8 @@ var lint = function(opts, done) {
    */
   debug('linting files', opts.files);
   console.log('  ' + chalk.gray(figures.pointerSmall,
-      format('Running eslint on %d files%s', opts.files.length,
-        figures.ellipsis)));
+    format('Running eslint on %d files%s', opts.files.length,
+      figures.ellipsis)));
 
   var report = cli.executeOnFiles(opts.files);
   var formatter = cli.getFormatter();
