@@ -9,26 +9,23 @@
 - [`dependency-check`][dependency-check] Makes sure you didn't forget to update
   your `package.json` with new dependencies or remove dependencies your module
   isn't using anymore.
-- [`jsfmt`][jsfmt] Formats your code to the syleguide for you.
 - [`eslint`][eslint] Makes sure your code conforms to the syleguide for cases
   that aren't just simple formatting and are probably bugs.
 
 ## Example
 
-First, install [pre-commit][pre-commit], which actually sets up the git precommit hook:
+First, install [pre-commit][pre-commit], which actually sets up the git pre-commit hook:
 
 ```bash
-npm install --save-dev pre-commit mongodb-js-precommit
+npm install --save-dev mongodb-js-precommit
 ```
 
-Next, update your `package.json` to add a new `check` script and condifure
-[pre-commit][pre-commit] to run it:
+Next, update your `package.json` to add a new `check` script:
 
 ```json
   "scripts": {
     "check": "mongodb-js-precommit"
-  },
-  "precommmit": ["check"]
+  }
 ```
 
 To test that everything is working correctly, you can run:
@@ -58,7 +55,7 @@ new found free time that would have been spent on code reviews.
 
 ### precommit
 
-Checkout the [pre-commit configuration docs][pre-commit_config] for more details.
+This should just work no config required...
 
 ### eslint
 
@@ -68,7 +65,7 @@ For more information, checkout [eslint-config-mongodb-js][eslint-config-mongodb-
 
 - [`npm-check-updates`][npm-check-updates] Can we safely update dependency
   versions to latest safely?
-- [`nsp`][nsp] Are you using any modules with known security vulnerabilites?
+- `npm audit` Are you using any modules with known security vulnerabilites?
 
 ## License
 
