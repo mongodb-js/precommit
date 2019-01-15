@@ -1,16 +1,31 @@
 #!/usr/bin/env node
 
 /* eslint no-sync:0, no-console:0 */
-var path = require('path');
-var fs = require('fs');
 var chalk = require('chalk');
 var figures = require('figures');
 
-var usage = fs.readFileSync(path.resolve(__dirname, '../usage.txt')).toString();
 var args = require('minimist')(process.argv.slice(2), {
   boolean: ['debug', 'json'],
   string: ['detective']
 });
+
+var usage = `Usage: mongodb-js-precommit <file>... [--dir=<path/to/module/dir>]
+
+I'll help you keep typos out of your projects.
+
+Usage:
+  # Lint all js files in the \`./lib\` directory:
+  mongodb-js-precommit ./lib/{*.js,**/*.js}
+
+Options:
+  <file>
+  --dir=<path>   The directory your package.json lives in. [Default: \`process.cwd()]\`].
+  --json         Ooutput as JSON for your machine friends [Default: \`false\`].
+  --debug        Enable debug messages.
+  -h --help      Show this screen.
+  --version      Show version.
+  --detective    Use a different parser for the \`dependency-check\`. [Default: \`precinct\`].
+`;
 
 if (args.debug) {
   process.env.DEBUG = 'mongodb-js-precommit';
