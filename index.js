@@ -86,7 +86,6 @@ function check(options, mode, done) {
   opts.ignore.push.apply(opts.ignore, [
     'eslint-config-mongodb-js',
     'mongodb-js-precommit',
-    'mongodb-js-fmt',
     'pre-commit'
   ]);
 
@@ -277,16 +276,6 @@ module.exports = function(opts, done) {
   if (!Array.isArray(opts.globs)) {
     opts.globs = [opts.globs];
   }
-
-  console.log(chalk.gray(
-    'Checking for potential errors' + figures.ellipsis));
-  console.log(chalk.gray('Use the'),
-    chalk.gray.bold('--debug'),
-    chalk.gray('flag to print diagnostic info')
-  );
-
-  console.log(chalk.gray('For more info, please see'),
-    chalk.gray.bold('https://github.com/mongodb-js/precommit'), '\n');
 
   var checks = [
     check.bind(null, opts, 'missing'),
