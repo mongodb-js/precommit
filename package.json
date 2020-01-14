@@ -22,7 +22,7 @@
     "mongodb-js-precommit": "bin/mongodb-js-precommit.js"
   },
   "dependencies": {
-    "async": "^2.6.1",
+    "async": "^3.1.0",
     "chalk": "^3.0.0",
     "debug": "^4.1.1",
     "dependency-check": "^4.1.0",
