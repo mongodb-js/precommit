@@ -46,20 +46,34 @@ function resolve(opts, done) {
   });
 }
 
-
 function check(options, mode, done) {
   if (mode === 'extra') {
-    console.log('  ' + chalk.gray(figures.pointerSmall,
-      'Checking for dependencies in package.json not used in code'
-        + figures.ellipsis));
+    console.log(
+      '  ' +
+        chalk.gray(
+          figures.pointerSmall,
+          'Checking for dependencies in package.json not used in code' +
+            figures.ellipsis
+        )
+    );
   } else if (mode === 'extra-dev') {
-    console.log('  ' + chalk.gray(figures.pointerSmall,
-      'Checking for devDependencies in package.json not used in code'
-        + figures.ellipsis));
+    console.log(
+      '  ' +
+        chalk.gray(
+          figures.pointerSmall,
+          'Checking for devDependencies in package.json not used in code' +
+            figures.ellipsis
+        )
+    );
   } else {
-    console.log('  ' + chalk.gray(figures.pointerSmall,
-      'Checking for dependencies used in code but not added to package.json'
-        + figures.ellipsis));
+    console.log(
+      '  ' +
+        chalk.gray(
+          figures.pointerSmall,
+          'Checking for dependencies used in code but not added to package.json' +
+            figures.ellipsis
+        )
+    );
   }
 
   var pkg = require(path.join(options.dir, 'package.json'));
@@ -104,91 +118,124 @@ function check(options, mode, done) {
     });
   }
 
-  dc(opts, function(err, data) {
-    if (err) {
-      return done(err);
-    }
-    pkg = data.package;
+  dc(opts)
+    .then(function(data) {
+      pkg = data.package;
 
-    var deps = data.used;
-    var results;
-    var errMsg;
-    var corrector;
+      var deps = data.used;
+      var results;
+      var errMsg;
+      var corrector;
 
-    if (mode === 'extra') {
-      // Are all dependencies in package.json are used in the code?
-      results = filterIgnored(dc.extra(pkg, deps, {
-        excludeDev: true
-      })).filter(function(name) {
-        return pkg.devDependencies[name] !== undefined;
-      });
-
-      errMsg = results.length + ' dependencies in package.json are not used in code';
-      corrector = 'npm uninstall --save ' + results.join(' ') + ';';
-    } else if (mode === 'extra-dev') {
-      results = filterIgnored(dc.extra(pkg, deps, {
-        excludeDev: false
-      })).filter(function(name) {
-        return pkg.devDependencies[name] !== undefined;
-      });
-
-      errMsg = results.length + ' devDependencies in package.json could not be detected as used in code';
-      corrector = 'npm uninstall --save-dev ' + results.join(' ') + ';';
-    } else {
-      // Are we missing any dependencies in package.json?
-      results = filterIgnored(dc.missing(pkg, deps));
-      errMsg = results.length + ' dependencies|devDependencies missing from package.json';
-      corrector = results.map(function(name) {
-        return 'npm install --save ' + name + ';';
-      }).join('\n');
-    }
-
-    if (results.length === 0) {
       if (mode === 'extra') {
-        console.log('  ' + chalk.green(figures.tick),
-          ' No extra dependencies in package.json');
+        // Are all dependencies in package.json are used in the code?
+        results = filterIgnored(
+          dc.extra(pkg, deps, {
+            excludeDev: true
+          })
+        ).filter(function(name) {
+          return pkg.devDependencies[name] !== undefined;
+        });
+
+        errMsg =
+          results.length + ' dependencies in package.json are not used in code';
+        corrector = 'npm uninstall --save ' + results.join(' ') + ';';
       } else if (mode === 'extra-dev') {
-        console.log('  ' + chalk.green(figures.tick),
-          ' No extra devDependencies in package.json');
+        results = filterIgnored(
+          dc.extra(pkg, deps, {
+            excludeDev: false
+          })
+        ).filter(function(name) {
+          return pkg.devDependencies[name] !== undefined;
+        });
+
+        errMsg =
+          results.length +
+          ' devDependencies in package.json could not be detected as used in code';
+        corrector = 'npm uninstall --save-dev ' + results.join(' ') + ';';
       } else {
-        console.log('  ' + chalk.green(figures.tick),
-          ' No missing dependencies in package.json');
+        // Are we missing any dependencies in package.json?
+        results = filterIgnored(dc.missing(pkg, deps));
+        errMsg =
+          results.length +
+          ' dependencies|devDependencies missing from package.json';
+        corrector = results
+          .map(function(name) {
+            return 'npm install --save ' + name + ';';
+          })
+          .join('\n');
       }
+
+      if (results.length === 0) {
+        if (mode === 'extra') {
+          console.log(
+            '  ' + chalk.green(figures.tick),
+            ' No extra dependencies in package.json'
+          );
+        } else if (mode === 'extra-dev') {
+          console.log(
+            '  ' + chalk.green(figures.tick),
+            ' No extra devDependencies in package.json'
+          );
+        } else {
+          console.log(
+            '  ' + chalk.green(figures.tick),
+            ' No missing dependencies in package.json'
+          );
+        }
+        return done();
+      }
+
+      if (mode === 'extra-dev') {
+        var msg = [
+          chalk.gray(
+            '  There are modules listed as devDependencies in package.json we\n'
+          ),
+          chalk.gray('  could not detect are being used in your code.\n\n'),
+          chalk.gray(
+            '  Advanced users should considering updating the `dependency-check`\n'
+          ),
+          chalk.gray(
+            '  configuration in package.json to add additional entrypoints to scan for usage.\n'
+          ),
+          chalk.gray(
+            '  We suggest running the following command to clean-up:\n'
+          ),
+          chalk.white.bold(
+            '    npm install --save ' + results.join(' ') + ';\n\n'
+          ),
+          chalk.gray('\n\nPlease see the configuration docs for more info:\n'),
+          chalk.blue('https://github.com/mongodb-js/precommit#configuration')
+        ].join('');
+
+        var title = format(
+          '%d potentially unused devDependencies',
+          results.length
+        );
+        options.result.warnings.push({
+          title: title,
+          message: msg
+        });
+
+        console.log('  ' + chalk.yellow(figures.warning), ' ' + title);
+        return done();
+      }
+
+      console.log('  ' + chalk.red(figures.cross), ' ' + errMsg);
+
+      errMsg += chalk.gray('\nYou can correct this error by running:');
+      errMsg += '\n    ' + chalk.bold.white(corrector);
+      errMsg += chalk.gray(
+        '\n\nPlease see the configuration docs for more info:\n'
+      );
+      errMsg += chalk.blue(
+        'https://github.com/mongodb-js/precommit#configuration'
+      );
+
+      options.result.errors.push(new Error(errMsg));
       return done();
-    }
-
-    if (mode === 'extra-dev') {
-      var msg = [
-        chalk.gray('  There are modules listed as devDependencies in package.json we\n'),
-        chalk.gray('  could not detect are being used in your code.\n\n'),
-        chalk.gray('  Advanced users should considering updating the `dependency-check`\n'),
-        chalk.gray('  configuration in package.json to add additional entrypoints to scan for usage.\n'),
-        chalk.gray('  We suggest running the following command to clean-up:\n'),
-        chalk.white.bold('    npm install --save ' + results.join(' ') + ';\n\n'),
-        chalk.gray('\n\nPlease see the configuration docs for more info:\n'),
-        chalk.blue('https://github.com/mongodb-js/precommit#configuration')
-      ].join('');
-
-      var title = format('%d potentially unused devDependencies', results.length);
-      options.result.warnings.push({
-        title: title,
-        message: msg
-      });
-
-      console.log('  ' + chalk.yellow(figures.warning), ' ' + title);
-      return done();
-    }
-
-    console.log('  ' + chalk.red(figures.cross), ' ' + errMsg);
-
-    errMsg += chalk.gray('\nYou can correct this error by running:');
-    errMsg += '\n    ' + chalk.bold.white(corrector);
-    errMsg += chalk.gray('\n\nPlease see the configuration docs for more info:\n');
-    errMsg += chalk.blue('https://github.com/mongodb-js/precommit#configuration');
-
-    options.result.errors.push(new Error(errMsg));
-    return done();
-  });
+    })
+    .catch(done);
 }
 
 var lint = function(opts, done) {
@@ -203,9 +250,17 @@ var lint = function(opts, done) {
    * at the files the user actually changed.
    */
   debug('linting files', opts.files);
-  console.log('  ' + chalk.gray(figures.pointerSmall,
-    format('Running eslint on %d files%s', opts.files.length,
-      figures.ellipsis)));
+  console.log(
+    '  ' +
+      chalk.gray(
+        figures.pointerSmall,
+        format(
+          'Running eslint on %d files%s',
+          opts.files.length,
+          figures.ellipsis
+        )
+      )
+  );
 
   var report = cli.executeOnFiles(opts.files);
   var formatter = cli.getFormatter();
@@ -217,14 +272,15 @@ var lint = function(opts, done) {
 
   debug('eslint result', JSON.stringify(report.results, null, 2));
   if (report.errorCount > 0) {
-    var msg = format(
-      'Please fix the %d error(s) below.',
-      report.errorCount);
+    var msg = format('Please fix the %d error(s) below.', report.errorCount);
     msg += '\n\n' + formatter(report.results);
     var err = new Error(msg);
     opts.result.errors.push(err);
-    console.log('  ' + chalk.red.bold(figures.cross),
-      report.errorCount, ' eslint errors detected');
+    console.log(
+      '  ' + chalk.red.bold(figures.cross),
+      report.errorCount,
+      ' eslint errors detected'
+    );
   } else if (report.warningCount > 0) {
     var title = format('%s eslint warnings detected', report.warningCount);
     console.log('  ' + chalk.yellow.bold(figures.warning), ' ' + title);
@@ -232,15 +288,18 @@ var lint = function(opts, done) {
     opts.result.warnings.push({
       title: title,
       message: [
-        chalk.gray(format('  While eslint detected 0 potential errors,'
-          + ' you may want to consider addressing these %s warnings:', report.warningCount))
-        + '\n\n',
+        chalk.gray(
+          format(
+            '  While eslint detected 0 potential errors,' +
+              ' you may want to consider addressing these %s warnings:',
+            report.warningCount
+          )
+        ) + '\n\n',
         formatter(report.results)
       ].join('')
     });
   } else {
-    console.log('  ' + chalk.green(figures.tick),
-      ' No errors found by eslint');
+    console.log('  ' + chalk.green(figures.tick), ' No errors found by eslint');
   }
   done();
 };
@@ -284,9 +343,7 @@ module.exports = function(opts, done) {
     lint.bind(null, opts)
   ];
 
-  var tasks = [
-    resolve.bind(null, opts)
-  ];
+  var tasks = [resolve.bind(null, opts)];
   tasks.push.apply(tasks, checks);
 
   async.series(tasks, function(err) {
@@ -295,8 +352,13 @@ module.exports = function(opts, done) {
     }
 
     if (opts.result.errors.length > 0) {
-      var error = new Error(format('%d of %d check(s) failed:\n',
-        opts.result.errors.length, checks.length));
+      var error = new Error(
+        format(
+          '%d of %d check(s) failed:\n',
+          opts.result.errors.length,
+          checks.length
+        )
+      );
 
       opts.result.errors.map(function(e) {
         e.message.split('\n').map(function(line, i) {
