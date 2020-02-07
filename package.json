@@ -1,7 +1,7 @@
 {
   "name": "mongodb-js-precommit",
   "description": "Shared static analysis and integrity tooling.",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "author": "Lucas Hrabovsky <lucas@mongodb.com> (http://imlucas.com)",
   "homepage": "https://github.com/mongodb-js/precommit",
   "repository": {
