@@ -5,7 +5,7 @@ var chalk = require('chalk');
 var figures = require('figures');
 
 var args = require('minimist')(process.argv.slice(2), {
-  boolean: ['debug', 'json'],
+  boolean: ['debug', 'json', 'no-lint'],
   string: ['detective']
 });
 
@@ -22,6 +22,7 @@ Options:
   --dir=<path>   The directory your package.json lives in. [Default: \`process.cwd()]\`].
   --json         Ooutput as JSON for your machine friends [Default: \`false\`].
   --debug        Enable debug messages.
+  --no-lint      Do not perform the linting stage
   -h --help      Show this screen.
   --version      Show version.
   --detective    Use a different parser for the \`dependency-check\`. [Default: \`precinct\`].

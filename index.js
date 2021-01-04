@@ -310,6 +310,7 @@ module.exports = function(opts, done) {
     files: [],
     dry: false,
     json: false,
+    'no-lint': false,
     detective: 'precinct',
     formatted: [],
     unchanged: [],
@@ -340,8 +341,11 @@ module.exports = function(opts, done) {
     check.bind(null, opts, 'missing'),
     check.bind(null, opts, 'extra'),
     // check.bind(null, opts, 'extra-dev'),
-    lint.bind(null, opts)
   ];
+
+  if (!opts['no-lint']) {
+    checks.push(lint.bind(null, opts));
+  }
 
   var tasks = [resolve.bind(null, opts)];
   tasks.push.apply(tasks, checks);
