@@ -34,7 +34,7 @@
     "lodash.uniq": "^4.5.0",
     "minimist": "^1.2.0",
     "pre-commit": "github:mongodb-js/pre-commit",
-    "precinct": "^6.2.0"
+    "precinct": "^8.1.0"
   },
   "license": "Apache-2.0",
   "devDependencies": {
